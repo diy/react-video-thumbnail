@@ -111,8 +111,14 @@ export default class VideoThumbnailSelector extends Component {
 }
 
 VideoThumbnailSelector.propTypes = {
-  videoSrc: PropTypes.string,
+  videoSrc: PropTypes.string.isRequired,
   interval: PropTypes.number,
   onClickThumbnail: PropTypes.func,
   onThumbnailError: PropTypes.func,
+};
+
+VideoThumbnailSelector.defaultProps = {
+  interval: 1,
+  onClickThumbnail: () => {},
+  onThumbnailError: () => {},
 };
