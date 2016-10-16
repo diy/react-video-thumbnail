@@ -1,18 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import classNames from 'classnames';
 
-function createThumbnailImageFromVideo(video) {
-  const canvas = document.createElement('canvas');
-  const width = video.videoWidth;
-  const height = video.videoHeight;
-  if (width === 0 && height === 0) {
-    throw new Error('Cannot generate video thumbnail.');
-  }
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-  return canvas.toDataURL('image/jpeg', 1.0);
-},
 
 export default class VideoThumbnailSelector extends Component {
   constructor(props) {
@@ -26,6 +14,24 @@ export default class VideoThumbnailSelector extends Component {
     };
   }
 
+  createThumbnailImageFromVideo(video) {
+    const canvas = document.createElement('canvas');
+    console.log(canvas);
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    if (width === 0 && height === 0) {
+      throw new Error('Cannot generate video thumbnail.');
+    }
+    canvas.width = width;
+    canvas.height = height;
+    console.log(video);
+    console.log(canvas.width, canvas.height);
+    console.log(canvas.getContext('2d').drawImage(video, 0, 0, width, height));
+    canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+    console.log(canvas.toDataURL('image/jpeg', 1.0));
+    return canvas.toDataURL('image/jpeg', 1.0);
+  }
+
   addThumbnail(src) {
     this.setState({
       thumbnails: [...this.state.thumbnails, src],
@@ -34,11 +40,10 @@ export default class VideoThumbnailSelector extends Component {
 
   handlePlay() {
     const video = this.videoNode;
-    const { interval } = this.props;
     video.muted = true;
     let src;
     try {
-      src = createThumbnailImageFromVideo(video);
+      src = this.createThumbnailImageFromVideo(video);
     } catch (err) {
       return this.props.onThumbnailError(err);
     }
@@ -46,7 +51,7 @@ export default class VideoThumbnailSelector extends Component {
     this.setState({
       startTime: video.seekable.start(0),
       endTime: video.seekable.end(0),
-      currentTime: this.state.currentTime + interval,
+      currentTime: this.state.currentTime + 1,
     }, () => {
       video.currentTime = this.state.currentTime;
     });
@@ -54,11 +59,10 @@ export default class VideoThumbnailSelector extends Component {
 
   handleSeeked() {
     const video = this.videoNode;
-    const { interval } = this.props;
-    const src = createThumbnailImageFromVideo(video);
+    const src = this.createThumbnailImageFromVideo(video);
     this.setState({
       thumbnails: [...this.state.thumbnails, src],
-      currentTime: this.state.currentTime + interval,
+      currentTime: this.state.currentTime + 1,
     }, () => {
       const { currentTime, endTime } = this.state;
       if (currentTime < endTime) {
@@ -102,6 +106,7 @@ export default class VideoThumbnailSelector extends Component {
           onSeeked={this.handleSeeked.bind(this)}
           autoPlay
           muted
+          controls
         >
           <source src={videoSrc} type="video/mp4" />
         </video>
@@ -111,14 +116,13 @@ export default class VideoThumbnailSelector extends Component {
 }
 
 VideoThumbnailSelector.propTypes = {
-  videoSrc: PropTypes.string.isRequired,
-  interval: PropTypes.number,
+  videoSrc: PropTypes.string,
   onClickThumbnail: PropTypes.func,
   onThumbnailError: PropTypes.func,
 };
 
 VideoThumbnailSelector.defaultProps = {
-  interval: 1,
+  videoSrc: 'http://techslides.com/demos/sample-videos/small.mp4',
   onClickThumbnail: () => {},
   onThumbnailError: () => {},
 };
